@@ -1,0 +1,155 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: plcs.foreveroceans.io
+  labels:
+    app.kubernetes.io/part-of: foreveroceans
+spec:
+  group: foreveroceans.io
+  scope: Namespaced
+  names:
+    plural: plcs
+    singular: plc
+    kind: PLC
+    shortNames:
+    - plc
+    categories:
+    - iiot
+    - modbus
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            metadata:
+              type: object
+              properties:
+                name:
+                    type: string
+                    description: >-
+                      The name of the PLC device.
+            status:
+              type: object
+              properties:
+                available:
+                  type: string
+                  description: >-
+                    Indicates whether the PLC is available.
+            spec:
+              description: >-
+                PLCSpec defines the desired state of the PLC.
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: >-
+                    Defines the desired human readable title of the PLC.
+                version:
+                  type: string
+                  default: latest
+                  description: >-
+                    Defines the desired semantic version the PLCs software microservice should run.
+                plc_timeout:
+                  type: number
+                  default: 1.0
+                  description: >-
+                    Defines the desired timeout in seconds to make a connection to the PLC.
+                base:
+                  type: string
+                  description: >-
+                    Define the base URI that is used for all relative URI references throughout a CR.
+                    In CR instances, all relative URIs are resolved relative to the base URI
+                properties:
+                  description: >-
+                    Property can be used for sensing and controlling parameters, such as getting the current value or setting an operation state.
+                    Sensor and/or parameter data are considered properties
+                  type: object
+                  additionalProperties:
+                    type: object
+                    properties:
+                      title:
+                        description: >-
+                          Provides a human-readable title (e.g., display a text for UI representation) based on a default language.
+                        type: string
+                      description:
+                        description: >-
+                          Provides additional (human-readable) information based on a default language.
+                        type: string
+                      type:
+                        description: >-
+                          Assignment of JSON-based data types compatible with JSON Schema (one of boolean, integer, number, string, object, array, or null).
+                        type: string
+                        enum: ['integer', 'number', 'string', 'boolean', 'object', 'array', 'null']
+                      readOnly:
+                        description: >-
+                          Boolean value that is a hint to indicate whether a property interaction / value is read only (=true) or not (=false).
+                        type: boolean
+                      writeOnly:
+                        description: >-
+                          Boolean value that is a hint to indicate whether a property interaction / value is write only (=true) or not (=false).
+                        type: boolean
+                      unit:
+                        description: >-
+                          Unit of measurement for the property value.
+                        type: string
+                      minimum:
+                        description: >-
+                          Specifies a minimum numeric value. Only applicable for associated number or integer types.
+                        type: integer
+                      maximum:
+                        description: >-
+                          Specifies a maximum numeric value. Only applicable for associated number or integer types.
+                        type: integer
+                      forms:
+                        description: >-
+                          A list of forms that describe how to interact with the property.
+                        type: array
+                        items:
+                          description: >-
+                            A form is a set of instructions that describe how an operation can be performed. Forms are serializations of Protocol Bindings
+                          type: object
+                          properties:
+                            href:
+                              description: >-
+                                The URI that identifies the target of the form. (e.g 400002 or 40001?quantity=8)
+                              type: string
+                            op:
+                              description: >-
+                                The operation that can be performed on the target resource. Indicates the semantic intention of performing the operation(s) described by the form.
+                                For example, the Property interaction allows get and set operations. The protocol binding may contain a form for the get operation and a different form for the set operation.
+                                The op attribute indicates which form is for which and allows the client to select the correct form for the operation required.
+                                op can be assigned one or more interaction verb(s) each representing a semantic intention of an operation
+                              type: array
+                              items:
+                                type: string
+                                enum: [readproperty, writeproperty, observeproperty]
+                                description: >-
+                                  The operation type that indicates a semantic intention of an operation.
+                            scale:
+                              description: >-
+                                The scale factor that can be applied to the value of the property to obtain the actual value.
+                                For example, a scale factor of 0.1 can be used to convert a value of 100 to 10.0.
+                              type: number
+                            modbus:entity:
+                              description: >-
+                                A registry type to let the runtime automatically detect the right function code.
+                              type: string
+                              enum: [Coil, HoldingRegister]
+                            modbus:pollingTime:
+                              description: >-
+                                The time in seconds between two consecutive polls. This defines how often 
+                              type: integer
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+      - name: Version
+        type: string
+        description: The desired semantic version the PLCs software microservice should run.
+        jsonPath: .spec.version
+      - name: Available
+        type: string
+        description: The current availability of the PLC.
+        jsonPath: .status.available

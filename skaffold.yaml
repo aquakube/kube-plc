@@ -1,0 +1,39 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: plc
+build:
+  tagPolicy:
+    gitCommit: {}
+  artifacts:
+  - image: 456087932636.dkr.ecr.us-west-2.amazonaws.com/kube-plc/plc
+    context: ./apps/plc
+    docker:
+      dockerfile: Dockerfile
+    hooks:
+      before:
+        - command: ["sh", "-c", "./bin/ecr-login.sh"]
+          os: [darwin, linux]
+  - image: 456087932636.dkr.ecr.us-west-2.amazonaws.com/kube-plc/operator
+    context: ./apps/operator
+    docker:
+      dockerfile: Dockerfile
+    hooks:
+      before:
+        - command: ["sh", "-c", "./bin/ecr-login.sh"]
+          os: [darwin, linux]
+manifests:
+  kustomize:
+    paths:
+    - kubernetes/base
+deploy:
+  kubectl: {}
+profiles:
+  - name: dev
+    patches:
+      - op: replace
+        path: /build/tagPolicy
+        value:
+          sha256: {}
+    deploy:
+      kubeContext: avalonkoadev

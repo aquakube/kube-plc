@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plc-operator
+  labels:
+    app.kubernetes.io/name: plc-operator
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/part-of: plc
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: plc-operator
+  template:
+    metadata:
+      labels:
+        app: plc-operator
+    spec:
+      serviceAccountName: plc-operator
+      imagePullSecrets:
+      - name: k8s-ecr-login-renew-docker-secret
+      containers:
+      - name: operator
+        image: 456087932636.dkr.ecr.us-west-2.amazonaws.com/kube-plc/operator:latest
+        ports:
+          - containerPort: 5555
+        env:
+          - name: ENVIRONMENT
+            value: "prod"
+          - name: NAMESPACE
+            value: "plc"
+          - name: SERVICE_NAME
+            value: "plc-operator"
+          - name: SERVICE_PORT
+            value: "443"
+          - name: CONTAINER_PORT
+            value: "5555"
+          - name: KAFKA_BROKERS
+            value: "kafka-kafka-bootstrap.kafka.svc.cluster.local:9092"
+          - name: KAFKA_EVENTS_TOPIC
+            value: "plc.events"
+          - name: KAFKA_MAX_BLOCK_MS
+            value: "5000"
+          - name: KAFKA_RETRIES
+            value: "5"
+          - name: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+            value: "telemetry-collector.opentelemetry.svc.cluster.local:4317"

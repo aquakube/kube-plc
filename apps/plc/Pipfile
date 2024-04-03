@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+Flask = "2.2.2"
+Werkzeug = "2.2.2"
+pymodbus = "3.0.2"
+kafka-python = "2.0.2"
+opentelemetry-api = "1.20.0"
+opentelemetry-sdk = "1.20.0"
+opentelemetry-exporter-otlp = "1.20.0"
+
+[requires]
+python_version = "3.11"
